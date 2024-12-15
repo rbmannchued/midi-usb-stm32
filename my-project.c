@@ -539,7 +539,7 @@ const uint8_t sysex_identity[] = {
         /* Padding */
 	0x00,	
 };
-typedef struct {
+typedef struct FIFO{
         /* Read pointer */
 	uint8_t *read;
 
@@ -563,7 +563,7 @@ typedef struct {
 
         /* number of midi commands (1 command = 3 8bit) */
 	uint8_t midi_commands;
-} FIFO;
+}FIFO;
 
 /* USB FIFO */
 static FIFO usb_FIFO;
@@ -623,12 +623,17 @@ static FIFO FIFO_read(FIFO fifo){
     fifo.empty = 0;		 
     return fifo;
 }
+void usb_isr(usbd_device *dev, uint8_t ep){
+	(void)ep;	
+	char buf[64];
+        
+        usbd_ep_read_packet(dev, 0x01, buf, 64);
+        
         usb_FIFO = FIFO_write(usb_FIFO, buf[1]); /* MIDI command */
         usb_FIFO = FIFO_write(usb_FIFO, buf[2]); /* MIDI note */
         usb_FIFO = FIFO_write(usb_FIFO, buf[3]); /* MIDI velocity */
         usb_FIFO.midi_commands++;
 }
-/* USB Send */
 static void usb_send(usbd_device *dev){
     /* Prepare MIDI packet for Note On message */
     char buf[4] = {
@@ -656,6 +661,7 @@ int main(void)
     rcc_periph_clock_enable(RCC_GPIOC);
     rcc_periph_clock_enable(RCC_GPIOB);
 
+//    static FIFO usb_FIFO;
     /* FIFO Setup */
     usb_FIFO = FIFO_setup(usb_FIFO, 64);
 

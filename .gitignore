@@ -1,1 +1,6 @@
-tag
+tags
+*.bin
+*.elf
+*.ld
+*.d
+*.o
