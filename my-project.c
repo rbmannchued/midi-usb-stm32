@@ -1,22 +1,12 @@
 #include <stdlib.h>
-#include <stdint.h>
 #include <libopencm3/usb/usbd.h>
 #include <libopencm3/usb/audio.h>
 #include <libopencm3/usb/midi.h>
 #include <libopencm3/cm3/scb.h>
 #include <libopencm3/cm3/systick.h>
 #include <libopencm3/cm3/nvic.h>
-#include <libopencm3/cm3/scb.h>
-#include <libopencm3/stm32/desig.h>
-#include <libopencm3/stm32/exti.h>
 #include <libopencm3/stm32/rcc.h>
-#include <libopencm3/stm32/flash.h>
 #include <libopencm3/stm32/gpio.h>
-#include <libopencm3/stm32/adc.h>
-#include <libopencm3/stm32/pwr.h>
-#include <libopencm3/stm32/spi.h>
-#include <libopencm3/stm32/usart.h>
-#include <libopencmsis/core_cm3.h>
 static usbd_device *usbd_dev;
 
 
@@ -232,9 +222,6 @@ static const struct usb_interface_descriptor audio_control_iface[] = {{
 static const struct {
 	struct usb_midi_header_descriptor header;
 	struct usb_midi_in_jack_descriptor in_embedded;
-//	struct usb_midi_in_jack_descriptor in_external;
-//	struct usb_midi_out_jack_descriptor out_embedded;
-//	struct usb_midi_out_jack_descriptor out_external;
 } __attribute__((packed)) midi_streaming_functional_descriptors = {
 	/* Table B-6: Midi Adapter Class-specific MS Interface Descriptor */
 	.header = {
@@ -253,51 +240,6 @@ static const struct {
 		.bJackID = 0x01,
 		.iJack = 0x00,
 	},
-	/* Table B-8: MIDI Adapter MIDI IN Jack Descriptor (External) */
-//	.in_external = {
-//		.bLength = sizeof(struct usb_midi_in_jack_descriptor),
-//		.bDescriptorType = USB_AUDIO_DT_CS_INTERFACE,
-//		.bDescriptorSubtype = USB_MIDI_SUBTYPE_MIDI_IN_JACK,
-//		.bJackType = USB_MIDI_JACK_TYPE_EXTERNAL,
-//		.bJackID = 0x02,
-//		.iJack = 0x00,
-//	},
-	/* Table B-9: MIDI Adapter MIDI OUT Jack Descriptor (Embedded) */
-//	.out_embedded = {
-//		.head = {
-//			.bLength = sizeof(struct usb_midi_out_jack_descriptor),
-//			.bDescriptorType = USB_AUDIO_DT_CS_INTERFACE,
-//			.bDescriptorSubtype = USB_MIDI_SUBTYPE_MIDI_OUT_JACK,
-//			.bJackType = USB_MIDI_JACK_TYPE_EMBEDDED,
-//			.bJackID = 0x03,
-//			.bNrInputPins = 1,
-//		},
-//		.source[0] = {
-//			.baSourceID = 0x02,
-//			.baSourcePin = 0x01,
-//		},
-//		.tail = {
-//			.iJack = 0x00,
-//		}
-//	},
-//	/* Table B-10: MIDI Adapter MIDI OUT Jack Descriptor (External) */
-//	.out_external = {
-//		.head = {
-//			.bLength = sizeof(struct usb_midi_out_jack_descriptor),
-//			.bDescriptorType = USB_AUDIO_DT_CS_INTERFACE,
-//			.bDescriptorSubtype = USB_MIDI_SUBTYPE_MIDI_OUT_JACK,
-//			.bJackType = USB_MIDI_JACK_TYPE_EXTERNAL,
-//			.bJackID = 0x04,
-//			.bNrInputPins = 1,
-//		},
-//		.source[0] = {
-//			.baSourceID = 0x01,
-//			.baSourcePin = 0x01,
-//		},
-//		.tail = {
-//			.iJack = 0x00,
-//		},
-//	},
 };
 
 
@@ -437,102 +379,7 @@ const uint8_t sysex_identity[] = {
 
         /* Padding */
 	0x00,	
-};
-//typedef struct FIFO{
-//        /* Read pointer */
-//	uint8_t *read;
-//
-//        /* Write pointer */
-//	uint8_t *write;
-//
-//        /* Size of the FIFO */
-//	size_t size;
-//
-//        /* Start adress pointer */
-//	uint8_t *start;
-//
-//        /* End adress pointer */
-//	uint8_t *end;
-//
-//        /* current data (read return) */
-//	uint8_t data;
-//
-//        /* is the FIFO empty -> 1=yes 0=no */
-//	uint8_t empty;
-//
-//        /* number of midi commands (1 command = 3 8bit) */
-//	uint8_t midi_commands;
-//}FIFO;
-
-/* USB FIFO */
-//static FIFO usb_FIFO;
-
-
-/* FIFO Setup */
-//static FIFO FIFO_setup(FIFO fifo, size_t size){
-//    fifo.size = size;
-//    fifo.start = malloc(fifo.size * sizeof(uint8_t));    
-//    fifo.end = fifo.start + size;
-//    fifo.write = fifo.start;
-//    fifo.read = fifo.start;
-//    return fifo;
-//}
-
-/* FIFO Write */
-//static FIFO FIFO_write(FIFO fifo, uint8_t data){
-//    if(fifo.write == fifo.end){
-//        if(fifo.read != fifo.start){
-//            fifo.write = fifo.start;
-//        } else {
-//            /* FIFO full */
-//            return fifo;
-//        }
-//    } else {
-//        if((fifo.write + 1) != fifo.read){ 
-//            fifo.write = fifo.write + 1;
-//        } else {
-//            /* FIFO full */
-//            return fifo;
-//        }
-//    }
-//    *fifo.write = data;
-//    return fifo;
-//}
-
-/* FIFO Read */
-//static FIFO FIFO_read(FIFO fifo){
-//    if(fifo.read == fifo.end){
-//        if(fifo.write != fifo.end){
-//            fifo.read = fifo.start;
-//        } else {
-//            /* FIFO empty */
-//            fifo.empty = 1;
-//            return fifo;
-//        }
-//    } else {
-//        if(fifo.read != fifo.write){
-//            fifo.read = fifo.read + 1;
-//        } else {
-//            /* FIFO empty */
-//            fifo.empty = 1;
-//            return fifo;
-//        }
-//    }
-//    fifo.data = *fifo.read;
-//    fifo.empty = 0;		 
-//    return fifo;
-//}
-//    void usb_isr(usbd_device *dev, uint8_t ep){
-//        (void)ep;	
-//        char buf[64];
-//            
-//            usbd_ep_read_packet(dev, 0x01, buf, 64);
-//            
-//            usb_FIFO = FIFO_write(usb_FIFO, buf[1]); /* MIDI command */
-//            usb_FIFO = FIFO_write(usb_FIFO, buf[2]); /* MIDI note */
-//            usb_FIFO = FIFO_write(usb_FIFO, buf[3]); /* MIDI velocity */
-//            usb_FIFO.midi_commands++;
-//    }
+};    
 static void usb_send(usbd_device *dev){
     /* Prepare MIDI packet for Note On message */
     char buf[4] = {
@@ -554,15 +401,12 @@ static void loop(void){
 
 int main(void)
 {
-    rcc_clock_setup_in_hse_8mhz_out_72mhz();
+    rcc_clock_setup_pll(&rcc_hse_configs[RCC_CLOCK_HSE8_72MHZ]);
 
     rcc_periph_clock_enable(RCC_GPIOA);
     rcc_periph_clock_enable(RCC_GPIOC);
     rcc_periph_clock_enable(RCC_GPIOB);
 
-//    static FIFO usb_FIFO;
-    /* FIFO Setup */
-    //usb_FIFO = FIFO_setup(usb_FIFO, 64);
 
     nvic_enable_irq(NVIC_USB_LP_CAN_RX0_IRQ);
 
