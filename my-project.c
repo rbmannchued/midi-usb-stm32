@@ -32,7 +32,7 @@ static const struct usb_device_descriptor dev_descr = {
         /* Type: uint8_t   Size: 1   
          * Descriptor: Device Descriptor Type = 1
          */
-	.bDescriptorType = USB_DT_DEVICE,  
+    	.bDescriptorType = USB_DT_DEVICE,  
 
         /* Type: uint16_t   Size: 2   
          * Description: This field identifies the release of the USB 
@@ -46,13 +46,13 @@ static const struct usb_device_descriptor dev_descr = {
          * interface within a configuration specifies its own class information 
          * and the various interfaces operate independently.
          */
-	.bDeviceClass = 0,
+    	.bDeviceClass = 0,
 
         /* Type: uint8_t   Size: 1   
          * Description: Subclass code (assigned by the USB-IF)   
          * if bDeviceClass = 0 then bDeviceSubClass = 0
          */
-	.bDeviceSubClass = 0,
+	    .bDeviceSubClass = 0,
 
         /* Type: uint8_t   Size: 1   
          * Description: Protocol code (assigned by the USB-IF)   
@@ -60,49 +60,49 @@ static const struct usb_device_descriptor dev_descr = {
          * basis. However, it may use class specific protocols on an interface 
          * basis
          */
-	.bDeviceProtocol = 0,
+    	.bDeviceProtocol = 0,
 
         /* Type: uint8_t   Size: 1   
          * Description: Maximum packet size for Endpoint zero 
          * (only 8, 16, 32, or 64 are valid)
          */
-	.bMaxPacketSize0 = 64,
+	    .bMaxPacketSize0 = 64,
 
         /* Type: uint16_t   Size: 2   
          * Description: Vendor ID (assigned by the USB-IF)
          */
-	.idVendor = 0x0666,
+	    .idVendor = 0x0666,
 
         /* Type: uint16_t   Size: 2   
          * Description: Product ID (assigned by the manufacturer)
          */
-	.idProduct = 0x0815,
+	    .idProduct = 0x0815,
 
         /* Type: uint16_t   Size: 2   
          * Description: Device release number in binary-coded decimal
          */
-	.bcdDevice = 0x0101,
+	    .bcdDevice = 0x0101,
 
         /* Type: uint8_t   Size: 1   
          * Description: Index of string descriptor describing manufacturer
          */
-	.iManufacturer = 1,
+	    .iManufacturer = 1,
 
         /* Type: uint8_t   Size: 1   
          * Description: Index of string descriptor describing product
          */
-	.iProduct = 2,
+	    .iProduct = 2,
 
         /* Type: uint8_t   Size: 1   
          * Description: Index of string descriptor describing the device's 
          * serial number
          */
-	.iSerialNumber = 3,
+	    .iSerialNumber = 3,
 
         /* Type: uint8_t   Size: 1   
          * Description: Number of possible configurations
          */
-	.bNumConfigurations = 1,  
+	    .bNumConfigurations = 1,  
 };
 static void usb_setup(usbd_device *dev, uint16_t wValue)
 {
@@ -110,10 +110,10 @@ static void usb_setup(usbd_device *dev, uint16_t wValue)
 	(void)wValue;
 
 	/* Setup USB Receive interrupt. */
-	usbd_ep_setup(dev, 0x01, USB_ENDPOINT_ATTR_INTERRUPT, 64, usb_isr);
+    usbd_ep_setup(dev, 0x01, USB_ENDPOINT_ATTR_BULK, 64, NULL);
 
 	usbd_ep_setup(dev, 0x81, USB_ENDPOINT_ATTR_BULK, 64, NULL);
-
+    
 	systick_set_clocksource(STK_CSR_CLKSOURCE_AHB_DIV8);
 	systick_set_reload(99999);
 	systick_interrupt_enable();
@@ -121,17 +121,17 @@ static void usb_setup(usbd_device *dev, uint16_t wValue)
 
 }
 
-/* poll USB on interruptg */
+//{ poll USB on interruptg */
 void usb_lp_can_rx0_isr(void) {
     	usbd_poll(usbd_dev);
 }
 
 
 /* Midi specific endpoint descriptors. */
-static const struct usb_midi_endpoint_descriptor midi_usb_endp[] = {{
+static const struct usb_midi_endpoint_descriptor midi_usb_endp[] = {
+    {
                 
 	/* Table B-12: MIDI Adapter Class-specific Bulk OUT Endpoint
-	 * Descriptor, but we use an Interrupt driven Endpoint
          */
 	.head = {
 		.bLength = sizeof(struct usb_midi_endpoint_descriptor),
@@ -143,151 +143,50 @@ static const struct usb_midi_endpoint_descriptor midi_usb_endp[] = {{
 		.baAssocJackID = 0x01,
 	},
 }, {
-	/* Table B-14: MIDI Adapter Class-specific Bulk IN Endpoint
-	 * Descriptor 
-         */
-	.head = {
-		.bLength = sizeof(struct usb_midi_endpoint_descriptor),
-		.bDescriptorType = USB_AUDIO_DT_CS_ENDPOINT,
-		.bDescriptorSubType = USB_MIDI_SUBTYPE_MS_GENERAL,
-		.bNumEmbMIDIJack = 1,
-	},
-	.jack[0] = {
-		.baAssocJackID = 0x03,
-	},
-} };
+        /* Table B-14: MIDI Adapter Class-specific Bulk IN Endpoint
+         * Descriptor 
+             */
+        .head = {
+            .bLength = sizeof(struct usb_midi_endpoint_descriptor),
+            .bDescriptorType = USB_AUDIO_DT_CS_ENDPOINT,
+            .bDescriptorSubType = USB_MIDI_SUBTYPE_MS_GENERAL,
+            .bNumEmbMIDIJack = 1,
+        },
+        .jack[0] = {
+            .baAssocJackID = 0x03,
+        },
+    } 
+};
 
 
 /* Standard endpoint descriptors */
-static const struct usb_endpoint_descriptor usb_endp[] = {{
-	/* Table B-11: MIDI Adapter Standard Bulk OUT Endpoint Descriptor, 
-         * but we use an Interrupt driven Endpoint
-         */
+static const struct usb_endpoint_descriptor usb_endp[] = {
+    {
+            /* Look above */
+        .bLength = USB_DT_ENDPOINT_SIZE,
 
+            /* Look above */
+        .bDescriptorType = USB_DT_ENDPOINT,
 
-        /* Type: uint8_t   Size: 1   
-         * Descriptor: Size of this descriptor in bytes
-         */
-	.bLength = USB_DT_ENDPOINT_SIZE,
+             /* Look above */
+        .bEndpointAddress = 0x81,
 
-        /* Type: uint8_t   Size: 1   
-         * Descriptor: Endpoint Descriptor Type = 5. 
-         */
-	.bDescriptorType = USB_DT_ENDPOINT,
+            /* Look above */
+        .bmAttributes = USB_ENDPOINT_ATTR_BULK,
 
-        /* Type: uint8_t   Size: 1   
-         * Descriptor: The address of the endpoint on the USB device described 
-         * by this descriptor. The address is encoded as follows:  0-3: 
-         * The endpoint number   4-6: Reserved, reset to zero   7: Direction, 
-         * ignored for control endpoints -> 0 = OUT   1 = IN
-         */
-	.bEndpointAddress = 0x01,
+            /* Look above */
+        .wMaxPacketSize = 0x40,
 
-        /* Type: uint8_t   Size: 1
-         *     Description:
-         *   	    The endpoint attribute when configured through 
-         *          bConfigurationValue.
-         *	           Bits 1..0: Transfer Type
-         *			   00 = Control
-         *                         01 = Isochronous
-         *                         10 = Bulk
-         *                         11 = Interrupt
-         *                
-         *          For non-isochronous endpoints, bits 5..2 must be 
-         *          set to zero. For isochronous endpoints, they are 
-         *          defined as:
-         *                  Bits 3..2: Synchronization Type
-         *                         00 = No Synchronization
-         *                         01 = Asynchronous
-         *                         10 = Adaptive
-         *                         11 = Synchronous
-         *                  Bits 5..4: Usage Type
-         *                         00 = Data
-         *                         01 = Feedback
-         *                         10 = Implicit feedback
-         *                         11 = Reserved
-         *               
-         *          All other bits are reserved and must be reset to zero. 
-         */
-	.bmAttributes = USB_ENDPOINT_ATTR_INTERRUPT, 
+            /* Look above */
+        .bInterval = 0x00, 			 
 
-        /* Type: uint16_t   Size: 2
-         *     Description:
-         *          Is the maximum packet size of this endpoint. 
-         *          For isochronous endpoints, this value is used to reserve 
-         *          the time on the bus, required for the per-(micro)frame 
-         *          data payloads.
-         *                  Bits 10..0 = max. packet size (in bytes).
-         *
-         *          For high-speed isochronous and interrupt endpoints:
-         *                  Bits 12..11 = number of additional transaction 
-         *                  opportunities per micro-frame:
-         *                         00 = None (1 transaction per micro-frame)
-         *                         01 = 1 additional (2 per micro-frame)
-         *                         10 = 2 additional (3 per micro-frame)
-         *                         11 = Reserved
-         *                  
-         *                  Bits 15..13 are reserved and must be set to zero. 
-         */
-	.wMaxPacketSize = 0x40, 
+            /* Look above */
+        .extra = &midi_usb_endp[1],
 
-        /* Type: uint8_t   Size: 1
-         *     Description:
-         *          Interval for polling endpoint for data transfers. 
-         *          Expressed in frames or micro-frames depending on the 
-         *          operating speed (1ms, or 125μs units).
-         *
-         *          For full-/high-speed isochronous endpoints, this value 
-         *          must be in the range from 1 to 16. The bInterval value 
-         *          is used as the exponent for a 2bInterval-1 value; 
-         *          For example, a bInterval of 4 means a period of 8 (24-1).
-         *
-         *          For full-/low-speed interrupt endpoints, the value of 
-         *          this field may be from 1 to 255.
-         *
-         *          For high-speed interrupt endpoints, the bInterval value is 
-         *          used as the exponent for a 2bInterval-1 value; For Example, 
-         *          a bInterval of 4 means a period of 8 (24-1). 
-         *          This value must be from 1 to 16.
-         *
-         *          For high-speed bulk/control OUT endpoints, the bInterval 
-         *          must specify the maximum NAK rate of the endpoint. 
-         *          A value of 0 indicates the endpoint never NAKs. 
-         *          Other values indicate at most 1 NAK each bInterval number 
-         *          of microframes. This value must be in the range 
-         *          from 0 to 255.*/
-	.bInterval = 0x02,
-
-        /* Field for the extra Descriptor needed for an MIDI Endpoint */
-	.extra = &midi_usb_endp[0],
-
-        /* length of the extra Descriptor */
-	.extralen = sizeof(midi_usb_endp[0])	
-}, {
-        /* Look above */
-	.bLength = USB_DT_ENDPOINT_SIZE,
-
-        /* Look above */
-	.bDescriptorType = USB_DT_ENDPOINT,
-
-         /* Look above */
-	.bEndpointAddress = 0x81,
-
-        /* Look above */
-	.bmAttributes = USB_ENDPOINT_ATTR_BULK,
-
-        /* Look above */
-	.wMaxPacketSize = 0x40,
-
-        /* Look above */
-	.bInterval = 0x00, 			 
-
-        /* Look above */
-	.extra = &midi_usb_endp[1],
-
-        /* Look above */
-	.extralen = sizeof(midi_usb_endp[1])	
-} };
+            /* Look above */
+        .extralen = sizeof(midi_usb_endp[1]), 
+    } 
+};
 
 
 /* Table B-4: MIDI Adapter Class-specific AC Interface Descriptor */
@@ -333,9 +232,9 @@ static const struct usb_interface_descriptor audio_control_iface[] = {{
 static const struct {
 	struct usb_midi_header_descriptor header;
 	struct usb_midi_in_jack_descriptor in_embedded;
-	struct usb_midi_in_jack_descriptor in_external;
-	struct usb_midi_out_jack_descriptor out_embedded;
-	struct usb_midi_out_jack_descriptor out_external;
+//	struct usb_midi_in_jack_descriptor in_external;
+//	struct usb_midi_out_jack_descriptor out_embedded;
+//	struct usb_midi_out_jack_descriptor out_external;
 } __attribute__((packed)) midi_streaming_functional_descriptors = {
 	/* Table B-6: Midi Adapter Class-specific MS Interface Descriptor */
 	.header = {
@@ -355,50 +254,50 @@ static const struct {
 		.iJack = 0x00,
 	},
 	/* Table B-8: MIDI Adapter MIDI IN Jack Descriptor (External) */
-	.in_external = {
-		.bLength = sizeof(struct usb_midi_in_jack_descriptor),
-		.bDescriptorType = USB_AUDIO_DT_CS_INTERFACE,
-		.bDescriptorSubtype = USB_MIDI_SUBTYPE_MIDI_IN_JACK,
-		.bJackType = USB_MIDI_JACK_TYPE_EXTERNAL,
-		.bJackID = 0x02,
-		.iJack = 0x00,
-	},
+//	.in_external = {
+//		.bLength = sizeof(struct usb_midi_in_jack_descriptor),
+//		.bDescriptorType = USB_AUDIO_DT_CS_INTERFACE,
+//		.bDescriptorSubtype = USB_MIDI_SUBTYPE_MIDI_IN_JACK,
+//		.bJackType = USB_MIDI_JACK_TYPE_EXTERNAL,
+//		.bJackID = 0x02,
+//		.iJack = 0x00,
+//	},
 	/* Table B-9: MIDI Adapter MIDI OUT Jack Descriptor (Embedded) */
-	.out_embedded = {
-		.head = {
-			.bLength = sizeof(struct usb_midi_out_jack_descriptor),
-			.bDescriptorType = USB_AUDIO_DT_CS_INTERFACE,
-			.bDescriptorSubtype = USB_MIDI_SUBTYPE_MIDI_OUT_JACK,
-			.bJackType = USB_MIDI_JACK_TYPE_EMBEDDED,
-			.bJackID = 0x03,
-			.bNrInputPins = 1,
-		},
-		.source[0] = {
-			.baSourceID = 0x02,
-			.baSourcePin = 0x01,
-		},
-		.tail = {
-			.iJack = 0x00,
-		}
-	},
-	/* Table B-10: MIDI Adapter MIDI OUT Jack Descriptor (External) */
-	.out_external = {
-		.head = {
-			.bLength = sizeof(struct usb_midi_out_jack_descriptor),
-			.bDescriptorType = USB_AUDIO_DT_CS_INTERFACE,
-			.bDescriptorSubtype = USB_MIDI_SUBTYPE_MIDI_OUT_JACK,
-			.bJackType = USB_MIDI_JACK_TYPE_EXTERNAL,
-			.bJackID = 0x04,
-			.bNrInputPins = 1,
-		},
-		.source[0] = {
-			.baSourceID = 0x01,
-			.baSourcePin = 0x01,
-		},
-		.tail = {
-			.iJack = 0x00,
-		},
-	},
+//	.out_embedded = {
+//		.head = {
+//			.bLength = sizeof(struct usb_midi_out_jack_descriptor),
+//			.bDescriptorType = USB_AUDIO_DT_CS_INTERFACE,
+//			.bDescriptorSubtype = USB_MIDI_SUBTYPE_MIDI_OUT_JACK,
+//			.bJackType = USB_MIDI_JACK_TYPE_EMBEDDED,
+//			.bJackID = 0x03,
+//			.bNrInputPins = 1,
+//		},
+//		.source[0] = {
+//			.baSourceID = 0x02,
+//			.baSourcePin = 0x01,
+//		},
+//		.tail = {
+//			.iJack = 0x00,
+//		}
+//	},
+//	/* Table B-10: MIDI Adapter MIDI OUT Jack Descriptor (External) */
+//	.out_external = {
+//		.head = {
+//			.bLength = sizeof(struct usb_midi_out_jack_descriptor),
+//			.bDescriptorType = USB_AUDIO_DT_CS_INTERFACE,
+//			.bDescriptorSubtype = USB_MIDI_SUBTYPE_MIDI_OUT_JACK,
+//			.bJackType = USB_MIDI_JACK_TYPE_EXTERNAL,
+//			.bJackID = 0x04,
+//			.bNrInputPins = 1,
+//		},
+//		.source[0] = {
+//			.baSourceID = 0x01,
+//			.baSourcePin = 0x01,
+//		},
+//		.tail = {
+//			.iJack = 0x00,
+//		},
+//	},
 };
 
 
@@ -408,7 +307,7 @@ static const struct usb_interface_descriptor midi_streaming_iface[] = {{
 	.bDescriptorType = USB_DT_INTERFACE,
 	.bInterfaceNumber = 1,
 	.bAlternateSetting = 0,
-	.bNumEndpoints = 2,
+	.bNumEndpoints = 1,
 	.bInterfaceClass = USB_CLASS_AUDIO,
 	.bInterfaceSubClass = USB_AUDIO_SUBCLASS_MIDISTREAMING,
 	.bInterfaceProtocol = 0,
@@ -462,10 +361,10 @@ static const struct usb_config_descriptor config = {
 static const char * usb_strings[] = {
 
         /* Manufacturer */
-	"Hold Alexander",
+	"Rafael Bormann Chuede",
 
         /* Product */
-	"MIDI Converter - STM32",
+	"MIDI STM32",
 
         /* SerialNumber */
 	"AHSM00003\0"			
@@ -539,101 +438,101 @@ const uint8_t sysex_identity[] = {
         /* Padding */
 	0x00,	
 };
-typedef struct FIFO{
-        /* Read pointer */
-	uint8_t *read;
-
-        /* Write pointer */
-	uint8_t *write;
-
-        /* Size of the FIFO */
-	size_t size;
-
-        /* Start adress pointer */
-	uint8_t *start;
-
-        /* End adress pointer */
-	uint8_t *end;
-
-        /* current data (read return) */
-	uint8_t data;
-
-        /* is the FIFO empty -> 1=yes 0=no */
-	uint8_t empty;
-
-        /* number of midi commands (1 command = 3 8bit) */
-	uint8_t midi_commands;
-}FIFO;
+//typedef struct FIFO{
+//        /* Read pointer */
+//	uint8_t *read;
+//
+//        /* Write pointer */
+//	uint8_t *write;
+//
+//        /* Size of the FIFO */
+//	size_t size;
+//
+//        /* Start adress pointer */
+//	uint8_t *start;
+//
+//        /* End adress pointer */
+//	uint8_t *end;
+//
+//        /* current data (read return) */
+//	uint8_t data;
+//
+//        /* is the FIFO empty -> 1=yes 0=no */
+//	uint8_t empty;
+//
+//        /* number of midi commands (1 command = 3 8bit) */
+//	uint8_t midi_commands;
+//}FIFO;
 
 /* USB FIFO */
-static FIFO usb_FIFO;
+//static FIFO usb_FIFO;
 
 
 /* FIFO Setup */
-static FIFO FIFO_setup(FIFO fifo, size_t size){
-    fifo.size = size;
-    fifo.start = malloc(fifo.size * sizeof(uint8_t));    
-    fifo.end = fifo.start + size;
-    fifo.write = fifo.start;
-    fifo.read = fifo.start;
-    return fifo;
-}
+//static FIFO FIFO_setup(FIFO fifo, size_t size){
+//    fifo.size = size;
+//    fifo.start = malloc(fifo.size * sizeof(uint8_t));    
+//    fifo.end = fifo.start + size;
+//    fifo.write = fifo.start;
+//    fifo.read = fifo.start;
+//    return fifo;
+//}
 
 /* FIFO Write */
-static FIFO FIFO_write(FIFO fifo, uint8_t data){
-    if(fifo.write == fifo.end){
-        if(fifo.read != fifo.start){
-            fifo.write = fifo.start;
-        } else {
-            /* FIFO full */
-            return fifo;
-        }
-    } else {
-        if((fifo.write + 1) != fifo.read){ 
-            fifo.write = fifo.write + 1;
-        } else {
-            /* FIFO full */
-            return fifo;
-        }
-    }
-    *fifo.write = data;
-    return fifo;
-}
+//static FIFO FIFO_write(FIFO fifo, uint8_t data){
+//    if(fifo.write == fifo.end){
+//        if(fifo.read != fifo.start){
+//            fifo.write = fifo.start;
+//        } else {
+//            /* FIFO full */
+//            return fifo;
+//        }
+//    } else {
+//        if((fifo.write + 1) != fifo.read){ 
+//            fifo.write = fifo.write + 1;
+//        } else {
+//            /* FIFO full */
+//            return fifo;
+//        }
+//    }
+//    *fifo.write = data;
+//    return fifo;
+//}
 
 /* FIFO Read */
-static FIFO FIFO_read(FIFO fifo){
-    if(fifo.read == fifo.end){
-        if(fifo.write != fifo.end){
-            fifo.read = fifo.start;
-        } else {
-            /* FIFO empty */
-            fifo.empty = 1;
-            return fifo;
-        }
-    } else {
-        if(fifo.read != fifo.write){
-            fifo.read = fifo.read + 1;
-        } else {
-            /* FIFO empty */
-            fifo.empty = 1;
-            return fifo;
-        }
-    }
-    fifo.data = *fifo.read;
-    fifo.empty = 0;		 
-    return fifo;
-}
-void usb_isr(usbd_device *dev, uint8_t ep){
-	(void)ep;	
-	char buf[64];
-        
-        usbd_ep_read_packet(dev, 0x01, buf, 64);
-        
-        usb_FIFO = FIFO_write(usb_FIFO, buf[1]); /* MIDI command */
-        usb_FIFO = FIFO_write(usb_FIFO, buf[2]); /* MIDI note */
-        usb_FIFO = FIFO_write(usb_FIFO, buf[3]); /* MIDI velocity */
-        usb_FIFO.midi_commands++;
-}
+//static FIFO FIFO_read(FIFO fifo){
+//    if(fifo.read == fifo.end){
+//        if(fifo.write != fifo.end){
+//            fifo.read = fifo.start;
+//        } else {
+//            /* FIFO empty */
+//            fifo.empty = 1;
+//            return fifo;
+//        }
+//    } else {
+//        if(fifo.read != fifo.write){
+//            fifo.read = fifo.read + 1;
+//        } else {
+//            /* FIFO empty */
+//            fifo.empty = 1;
+//            return fifo;
+//        }
+//    }
+//    fifo.data = *fifo.read;
+//    fifo.empty = 0;		 
+//    return fifo;
+//}
+//    void usb_isr(usbd_device *dev, uint8_t ep){
+//        (void)ep;	
+//        char buf[64];
+//            
+//            usbd_ep_read_packet(dev, 0x01, buf, 64);
+//            
+//            usb_FIFO = FIFO_write(usb_FIFO, buf[1]); /* MIDI command */
+//            usb_FIFO = FIFO_write(usb_FIFO, buf[2]); /* MIDI note */
+//            usb_FIFO = FIFO_write(usb_FIFO, buf[3]); /* MIDI velocity */
+//            usb_FIFO.midi_commands++;
+//    }
 static void usb_send(usbd_device *dev){
     /* Prepare MIDI packet for Note On message */
     char buf[4] = {
@@ -663,7 +562,7 @@ int main(void)
 
 //    static FIFO usb_FIFO;
     /* FIFO Setup */
-    usb_FIFO = FIFO_setup(usb_FIFO, 64);
+    //usb_FIFO = FIFO_setup(usb_FIFO, 64);
 
     nvic_enable_irq(NVIC_USB_LP_CAN_RX0_IRQ);
 
