@@ -3,14 +3,13 @@
 #include <libopencm3/usb/audio.h>
 #include <libopencm3/usb/midi.h>
 #include <libopencm3/cm3/scb.h>
-#include <libopencm3/cm3/systick.h>
 #include <libopencm3/cm3/nvic.h>
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/gpio.h>
 static usbd_device *usbd_dev;
 
 
-void usb_isr(usbd_device *dev, uint8_t ep);
+//void usb_isr(usbd_device *dev, uint8_t ep);
 
 
 static const struct usb_device_descriptor dev_descr = {
@@ -104,10 +103,6 @@ static void usb_setup(usbd_device *dev, uint16_t wValue)
 
 	usbd_ep_setup(dev, 0x81, USB_ENDPOINT_ATTR_BULK, 64, NULL);
     
-	systick_set_clocksource(STK_CSR_CLKSOURCE_AHB_DIV8);
-	systick_set_reload(99999);
-	systick_interrupt_enable();
-	systick_counter_enable();
 
 }
 
@@ -316,71 +311,7 @@ static const char * usb_strings[] = {
 /* Buffer to be used for control requests. */
 uint8_t usbd_control_buffer[128];
 
-
-/* SysEx identity message, preformatted with correct USB framing information */
-const uint8_t sysex_identity[] = {
-
-        /* USB Framing (3 byte SysEx) */
-	0x04,
-
-        /* SysEx start */
-	0xf0,
-
-        /* non-realtime */
-	0x7e,
-
-        /* Channel 0 */
-	0x00,
-
-        /* USB Framing (3 byte SysEx) */
-	0x04,
-
-        /* Educational/prototype manufacturer ID */
-	0x7d,
-
-        /* Family code (byte 1) */
-	0x66,
-
-        /* Family code (byte 2) */
-	0x66,
-
-        /* USB Framing (3 byte SysEx) */
-	0x04,
-
-        /* Model number (byte 1) */
-	0x51,
-
-        /* Model number (byte 2) */
-	0x19,
-
-        /* Version number (byte 1) */
-	0x00,
-
-        /* USB Framing (3 byte SysEx) */
-	0x04,
-
-        /* Version number (byte 2) */
-	0x00,
-
-        /* Version number (byte 3) */
-	0x01,
-
-        /* Version number (byte 4) */
-	0x00,
-
-        /* USB Framing (1 byte SysEx) */
-	0x05,
-
-        /* SysEx end */
-	0xf7,
-
-        /* Padding */
-	0x00,
-
-        /* Padding */
-	0x00,	
-};    
-static void usb_send(usbd_device *dev){
+    static void usb_send(usbd_device *dev){
     /* Prepare MIDI packet for Note On message */
     char buf[4] = {
         0x08,                   /* Command (Note On) */
