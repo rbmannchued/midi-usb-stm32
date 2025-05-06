@@ -1,3 +1,4 @@
 # Midi Usb setup Example
-code to make stm32f1 configured as a MIDI Device and send notes via USB.
-Using libopencm3 not st's hal.
+
+configure STM32F103 as a MIDI Device and send notes via USB.
+Using libopencm3, not ST's hal.
